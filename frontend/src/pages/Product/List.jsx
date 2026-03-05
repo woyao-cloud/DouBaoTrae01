@@ -14,21 +14,22 @@ const ProductList = () => {
   const [categories, setCategories] = useState([]);
   const [currentId, setCurrentId] = useState(null);
 
+  // Helper function to flatten tree
+  const flatten = (list) => {
+    let arr = [];
+    list.forEach(item => {
+      arr.push(item);
+      if (item.children) {
+        arr = arr.concat(flatten(item.children));
+      }
+    });
+    return arr;
+  };
+
   const fetchCategories = async () => {
     // Flatten category tree for select options or use TreeSelect
     // For simplicity, fetching flat list or processing tree
     const res = await axios.get('/categories');
-    // Simple flatten function for demonstration if API returns tree
-    const flatten = (list) => {
-      let arr = [];
-      list.forEach(item => {
-        arr.push(item);
-        if (item.children) {
-          arr = arr.concat(flatten(item.children));
-        }
-      });
-      return arr;
-    };
     setCategories(flatten(res.data));
   };
 

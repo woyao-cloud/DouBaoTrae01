@@ -65,6 +65,21 @@ const update = async (req, res, next) => {
     const product = await Product.findByPk(id);
     if (!product) return res.status(404).json({ code: 404, message: '商品不存在' });
 
+    const schema = Joi.object({
+      product_code: Joi.string(),
+      name: Joi.string(),
+      category_id: Joi.number(),
+      price: Joi.number(),
+      cost_price: Joi.number(),
+      stock: Joi.number().integer().min(0),
+      description: Joi.string().allow('').optional(),
+      cover_image: Joi.string().allow('').optional(),
+      status: Joi.number().valid(0, 1)
+    });
+
+    const { error } = schema.validate(req.body);
+    if (error) return res.status(400).json({ code: 400, message: error.details[0].message });
+
     await product.update(req.body);
     res.json({ code: 200, message: '更新成功', data: product });
   } catch (error) {

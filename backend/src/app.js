@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
 const routes = require('./routes');
 const errorHandler = require('./middleware/errorHandler');
 const { sequelize } = require('./models');
@@ -10,7 +12,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(helmet()); // Security headers
+app.use(morgan('dev')); // Logging
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' ? 'http://your-production-domain.com' : '*',
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

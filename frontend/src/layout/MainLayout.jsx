@@ -17,7 +17,7 @@ const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+  const [userInfo] = useState(() => JSON.parse(localStorage.getItem('userInfo') || '{}'));
 
   const menuItems = [
     {
