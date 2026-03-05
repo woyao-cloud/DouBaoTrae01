@@ -55,9 +55,9 @@ const MainLayout = () => {
   const userMenu = {
     items: [
       {
-        key: isLogin ? 'logout' : 'login',
-        label: isLogin ? '退出登录' : '登录',
-        onClick: isLogin ? handleLogout : () => navigate('/login'),
+        key: 'logout',
+        label: '退出登录',
+        onClick: handleLogout,
       },
     ],
   };
@@ -85,12 +85,19 @@ const MainLayout = () => {
             onClick={() => setCollapsed(!collapsed)}
             style={{ fontSize: '16px', width: 64, height: 64 }}
           />
-          <Dropdown menu={userMenu}>
-            <Space style={{ cursor: 'pointer' }}>
+          {isLogin ? (
+            <Dropdown menu={userMenu}>
+              <Space style={{ cursor: 'pointer' }}>
+                <Avatar icon={<UserOutlined />} />
+                <span>{userInfo.nickname || 'Admin'}</span>
+              </Space>
+            </Dropdown>
+          ) : (
+            <Space style={{ cursor: 'pointer' }} onClick={() => navigate('/login')}>
               <Avatar icon={<UserOutlined />} />
-              <span>{userInfo.nickname || '登录'}</span>
+              <span>登录</span>
             </Space>
-          </Dropdown>
+          )}
         </Header>
         <Content
           style={{
