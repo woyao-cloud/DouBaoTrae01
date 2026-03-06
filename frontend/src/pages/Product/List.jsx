@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Form, Input, Select, Modal, message, Popconfirm, Image } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Form, Input, Select, Modal, message, Popconfirm, Image, Tag } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import axios from '../../utils/request';
 
 const ProductList = () => {
@@ -13,6 +13,7 @@ const ProductList = () => {
   const [modalForm] = Form.useForm();
   const [categories, setCategories] = useState([]);
   const [currentId, setCurrentId] = useState(null);
+  const [seckillLoading, setSeckillLoading] = useState({});
 
   // Helper function to flatten tree
   const flatten = (list) => {
@@ -105,6 +106,53 @@ const ProductList = () => {
     }
   };
 
+  const handleSeckill = async (record) => {
+    setSeckillLoading(prev => ({ ...prev, [record.id]: true }));
+    try {
+      const res = await axios.post('/seckill/create', { productId: record.id });
+      message.info(res.message);
+      
+      // 轮询结果
+      const poll = setInterval(async () => {
+        try {
+          const resultRes = await axios.get('/seckill/result', { params: { productId: record.id } });
+          const result = resultRes.data;
+          
+          if (result.status === 'success') {
+            clearInterval(poll);
+            message.success(`秒杀成功！订单号: ${result.orderId}`);
+            setSeckillLoading(prev => ({ ...prev, [record.id]: false }));
+            fetchData(); // 刷新库存
+          } else if (result.status === 'failed') {
+            clearInterval(poll);
+            message.error(`秒杀失败: ${result.message}`);
+            setSeckillLoading(prev => ({ ...prev, [record.id]: false }));
+          }
+          // pending 状态继续轮询
+        } catch (error) {
+          clearInterval(poll);
+          setSeckillLoading(prev => ({ ...prev, [record.id]: false }));
+        }
+      }, 1000);
+
+      // 设置超时 30s
+      setTimeout(() => {
+        clearInterval(poll);
+        setSeckillLoading(prev => {
+           if (prev[record.id]) {
+             message.warning('查询超时，请稍后查看订单');
+             return { ...prev, [record.id]: false };
+           }
+           return prev;
+        });
+      }, 30000);
+
+    } catch (error) {
+      console.error(error);
+      setSeckillLoading(prev => ({ ...prev, [record.id]: false }));
+    }
+  };
+
   const handleModalOk = async () => {
     try {
       const values = await modalForm.validateFields();
@@ -129,6 +177,17 @@ const ProductList = () => {
     { title: '价格', dataIndex: 'price' },
     { title: '库存', dataIndex: 'stock' },
     {
+      title: '秒杀',
+      render: (_, record) => (
+        record.is_promotion === 1 ? (
+          <Space direction="vertical" size={0}>
+            <Tag color="red">秒杀中</Tag>
+            <span style={{ fontSize: 12 }}>余: {record.promotion_stock}</span>
+          </Space>
+        ) : '-'
+      )
+    },
+    {
       title: '状态',
       dataIndex: 'status',
       render: (text) => text === 1 ? <span style={{ color: 'green' }}>上架</span> : <span style={{ color: 'red' }}>下架</span>
@@ -137,6 +196,18 @@ const ProductList = () => {
       title: '操作',
       render: (_, record) => (
         <Space>
+          {record.is_promotion === 1 && (
+            <Button 
+              type="primary" 
+              danger 
+              size="small" 
+              icon={<ThunderboltOutlined />} 
+              loading={seckillLoading[record.id]}
+              onClick={() => handleSeckill(record)}
+            >
+              抢购
+            </Button>
+          )}
           <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)}>编辑</Button>
           <Button type="link" onClick={() => handleStatusChange(record)}>
             {record.status === 1 ? '下架' : '上架'}
@@ -203,8 +274,26 @@ const ProductList = () => {
           <Form.Item name="cost_price" label="成本价" rules={[{ required: true }]}>
             <Input type="number" />
           </Form.Item>
-          <Form.Item name="stock" label="库存" rules={[{ required: true }]}>
+          <Form.Item name="stock" label="普通库存" rules={[{ required: true }]}>
             <Input type="number" />
+          </Form.Item>
+          <Form.Item name="is_promotion" label="是否参与秒杀" initialValue={0}>
+            <Select>
+              <Select.Option value={1}>是</Select.Option>
+              <Select.Option value={0}>否</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item 
+            noStyle 
+            shouldUpdate={(prev, current) => prev.is_promotion !== current.is_promotion}
+          >
+            {({ getFieldValue }) => 
+              getFieldValue('is_promotion') === 1 ? (
+                <Form.Item name="promotion_stock" label="秒杀库存" rules={[{ required: true }]}>
+                  <Input type="number" />
+                </Form.Item>
+              ) : null
+            }
           </Form.Item>
           <Form.Item name="description" label="描述">
             <Input.TextArea />

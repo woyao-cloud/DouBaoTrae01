@@ -17,7 +17,8 @@ INSERT INTO product_categories (name, parent_id, sort) VALUES
 ('女装', 2, 20);
 
 -- 插入商品
-INSERT INTO products (product_code, name, category_id, price, cost_price, stock, status, description, cover_image) VALUES 
-('P001', 'iPhone 15 Pro', 3, 7999.00, 6000.00, 100, 1, '苹果最新旗舰手机', 'https://placeholder.com/iphone.jpg'),
-('P002', 'MacBook Air M3', 4, 8999.00, 7000.00, 50, 1, '轻薄笔记本', 'https://placeholder.com/macbook.jpg'),
-('P003', '夏季T恤', 5, 99.00, 30.00, 200, 1, '纯棉透气', 'https://placeholder.com/tshirt.jpg');
+INSERT INTO products (product_code, name, category_id, price, cost_price, stock, status, is_promotion, promotion_stock, description, cover_image) VALUES 
+('P001', 'iPhone 15 Pro', 3, 7999.00, 6000.00, 100, 1, 1, 10, '苹果最新旗舰手机 - 秒杀活动中', 'https://placeholder.com/iphone.jpg'),
+('P002', 'MacBook Air M3', 4, 8999.00, 7000.00, 50, 1, 0, 0, '轻薄笔记本', 'https://placeholder.com/macbook.jpg'),
+('P003', '夏季T恤', 5, 99.00, 30.00, 200, 1, 0, 0, '纯棉透气', 'https://placeholder.com/tshirt.jpg');
+

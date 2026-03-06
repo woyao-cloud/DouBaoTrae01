@@ -5,6 +5,8 @@ const morgan = require('morgan');
 const routes = require('./routes');
 const errorHandler = require('./middleware/errorHandler');
 const { sequelize } = require('./models');
+const initSeckillStock = require('./utils/initSeckill');
+const startConsumer = require('./utils/seckillConsumer');
 
 require('dotenv').config();
 
@@ -36,6 +38,12 @@ const startServer = async () => {
     // Sync models (in production, use migrations instead of sync)
     // await sequelize.sync({ alter: true }); 
     
+    // Initialize Seckill Stock
+    await initSeckillStock();
+    
+    // Start Seckill Consumer
+    startConsumer();
+
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });

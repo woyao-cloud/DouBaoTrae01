@@ -101,6 +101,16 @@ const Product = sequelize.define('Product', {
     defaultValue: 1, // 1-On Shelf, 0-Off Shelf
     allowNull: false
   },
+  is_promotion: {
+    type: DataTypes.SMALLINT,
+    defaultValue: 0, // 1-In Promotion, 0-No Promotion
+    allowNull: false
+  },
+  promotion_stock: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    allowNull: false
+  },
   description: {
     type: DataTypes.TEXT
   },

@@ -26,6 +26,8 @@ CREATE TABLE IF NOT EXISTS products (
     cost_price NUMERIC(10,2) NOT NULL,
     stock INT NOT NULL DEFAULT 0,
     status SMALLINT NOT NULL DEFAULT 1,
+    is_promotion SMALLINT NOT NULL DEFAULT 0,
+    promotion_stock INT NOT NULL DEFAULT 0,
     description TEXT,
     cover_image VARCHAR(255),
     create_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -38,6 +40,8 @@ CREATE TABLE IF NOT EXISTS products (
 
 COMMENT ON TABLE products IS '商品表';
 COMMENT ON COLUMN products.status IS '1-上架，0-下架';
+COMMENT ON COLUMN products.is_promotion IS '1-秒杀活动中，0-无活动';
+COMMENT ON COLUMN products.promotion_stock IS '秒杀库存';
 
 -- 3. 管理员表
 CREATE TABLE IF NOT EXISTS admins (

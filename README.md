@@ -83,6 +83,43 @@ npm run dev
    - 管理员账号管理
    - 权限控制（超级管理员/普通管理员）
 
+## 高并发秒杀功能 (Seckill)
+
+本项目实现了基于 **Redis 消息队列 + 乐观锁** 的高并发秒杀方案。
+
+### 架构说明
+
+1.  **Redis 预扣减**: 秒杀请求到达时，优先在 Redis 中扣减库存 (`DECR`)，减少数据库压力。
+2.  **异步队列**: 扣减成功的请求推入 Redis List (`LPUSH`)，实现削峰填谷。
+3.  **乐观锁扣库**: 后端消费者进程从队列取出请求，使用 PostgreSQL 乐观锁 (`promotion_stock > 0`) 最终扣减数据库库存。
+4.  **结果轮询**: 前端通过轮询接口获取秒杀结果。
+
+### 压测指南
+
+推荐使用 `ab` (Apache Bench) 或 `wrk` 进行压测。
+
+**场景**: 10000 个请求并发抢购 ID 为 1 的商品。
+
+```bash
+# 需先登录获取 Token，并在 Header 中携带
+# Authorization: Bearer <YOUR_TOKEN>
+
+ab -n 10000 -c 100 \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -p post_data.json \
+  http://localhost:3000/api/seckill/create
+```
+
+*注: `post_data.json` 内容为 `{"productId": 1}`*
+
+### 性能对比预期
+
+| 方案 | 吞吐量 (RPS) | 瓶颈 |
+| :--- | :--- | :--- |
+| **悲观锁 (FOR UPDATE)** | 低 (< 100) | 数据库行锁竞争严重，大量请求阻塞 |
+| **Redis + 队列 + 乐观锁** | 高 (> 2000) | Redis 性能极高，数据库压力被队列缓冲 |
+
 ## 注意事项
 
 - 数据库连接配置位于 `backend/.env`，默认配置适配 docker-compose 设置。

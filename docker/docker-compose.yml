@@ -17,6 +17,20 @@ services:
     networks:
       - app-network
 
+  redis:
+    image: redis:6.2
+    container_name: product_sys_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+
+volumes:
+  redis-data:
+
 networks:
   app-network:
     driver: bridge
