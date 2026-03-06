@@ -27,6 +27,7 @@ pnpm-debug.log*
 
 # Docker
 docker/pgdata/
+docker/pgdata/*
 
 # IDE
 .idea/

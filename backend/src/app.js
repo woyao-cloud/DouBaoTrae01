@@ -7,6 +7,8 @@ const errorHandler = require('./middleware/errorHandler');
 const { sequelize } = require('./models');
 const initSeckillStock = require('./utils/initSeckill');
 const startConsumer = require('./utils/seckillConsumer');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./config/swagger');
 
 require('dotenv').config();
 
@@ -22,6 +24,12 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
+  customCss: '.swagger-ui .topbar { display: none }', // 隐藏顶部 Logo 栏
+  customSiteTitle: "API 文档 - 商品后台管理系统"
+}));
 
 // Routes
 app.use('/api', routes);
